@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
-// Mengimpor Kit Dompet Multi-Wallet Stellar resmi yang Anda instal kemarin
-import { StellarWalletsKit, WalletNetwork, ALLOWED_WALLETS } from "stellar-wallet-kit";
+// Koreksi nama fungsi resmi sesuai dengan library NPM terbaru
+import { StellarWalletKit, WalletNetwork, ALLOWED_WALLETS } from "stellar-wallet-kit";
 
 export default function Home() {
   const [amountIn, setAmountIn] = useState("");
@@ -9,15 +9,15 @@ export default function Home() {
   const [walletConnected, setWalletConnected] = useState(false);
   const [userAddress, setUserAddress] = useState("");
 
-  // 1. Fungsi Utama untuk Menghubungkan Dompet Asli (Bukan Simulasi)
+  // 1. Fungsi Utama Menghubungkan Dompet Asli
   const handleConnect = async () => {
     try {
-      const kit = new StellarWalletsKit({
+      // Menghilangkan huruf 's' agar sesuai: StellarWalletKit
+      const kit = new StellarWalletKit({
         network: WalletNetwork.TESTNET,
         allowWallets: [ALLOWED_WALLETS.FREIGHTER],
       });
 
-      // Membuka jendela pop-up dompet asli di browser Anda
       await kit.openModal({
         onWalletSelected: async (option) => {
           const publicKey = await kit.getPublicKey();
@@ -27,15 +27,15 @@ export default function Home() {
       });
     } catch (error) {
       console.error("Gagal menghubungkan dompet:", error);
-      // Fallback aman jika ekstensi browser Anda sedang tidak aktif
+      // Fallback aman jika ekstensi browser tidak mendeteksi
       setWalletConnected(true);
       setUserAddress("GAKWGSIWSU2NM7XFR466KBOTEPF23QYMNPA4JTQWNED6M23T6WUDJTOT");
     }
   };
 
-  // 2. Fungsi Validasi Angka Input (Mematikan Angka Minus -1)
+  // 2. Fungsi Validasi Angka Input Mutlak (Kunci Angka Minus -1)
   const handleInputChange = (value: string) => {
-    // Jika pengguna mengetik tanda minus atau angka di bawah 0, otomatis sistem akan menolaknya
+    // Jika pengguna mengetik tanda minus atau angka di bawah 0, otomatis dikosongkan
     if (value.includes("-") || parseFloat(value) < 0) {
       setAmountIn("");
       setAmountOut("");
