@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-// Impor Provider dan file CSS resmi agar pop-up modal pilihan dompet bisa muncul ke layar
-import { WalletProvider, NetworkType } from "stellar-wallet-kit";
-import "stellar-wallet-kit/styles.css";
+import WalletProviderComponents from "./wallet-provider-components";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,19 +18,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <WalletProvider
-          config={{
-            network: NetworkType.TESTNET,
-            autoConnect: true,
-            theme: {
-              mode: "dark",
-              primaryColor: "#8b5cf6",
-              borderRadius: "16px",
-            },
-          }}
-        >
+        {/* Memanggil file pemisah khusus Client Component */}
+        <WalletProviderComponents>
           {children}
-        </WalletProvider>
+        </WalletProviderComponents>
       </body>
     </html>
   );

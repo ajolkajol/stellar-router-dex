@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-// Menggunakan Hooks dan Komponen visual tombol bawaan SDK resmi
 import { useWallet, ConnectButton } from "stellar-wallet-kit";
 
 export default function Home() {
@@ -8,19 +7,17 @@ export default function Home() {
   const [amountIn, setAmountIn] = useState("");
   const [amountOut, setAmountOut] = useState("");
 
-  // FUNGSI BLOKIR MINUS: Memblokir total tombol minus (-), tanda tambah (+), dan huruf 'e' saat diketik di keyboard
+  // MEMBLOKIR MINUS: Mencegah tombol minus (-), tambah (+), dan huruf 'e' ditekan di keyboard
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (["-", "+", "e", "E"].includes(e.key)) {
       e.preventDefault();
     }
   };
 
-  // VALIDASI INPUT ABSOLUT: Jika pengguna nekat melakukan copy-paste "-11", sistem langsung menghapusnya otomatis dalam 0.01 detik!
+  // VALIDASI INPUT ABSOLUT: Jika ketahuan melakukan copy-paste "-11", otomatis langsung dihapus otomatis
   const handleInputChange = (value: string) => {
-    // Menghapus paksa semua simbol minus atau karakter aneh menggunakan metode regex pembersih teks
     const cleanValue = value.replace(/[-+eE]/g, "");
     
-    // Jika kolom kosong, atau angka di bawah atau sama dengan nol, langsung bersihkan input
     if (!cleanValue || parseFloat(cleanValue) <= 0 || isNaN(parseFloat(cleanValue))) {
       setAmountIn("");
       setAmountOut("");
@@ -28,7 +25,6 @@ export default function Home() {
     }
     
     setAmountIn(cleanValue);
-    // Logika perhitungan matematika Router DEX dari kontrak CCSY Anda
     const hitungSederhana = parseFloat(cleanValue) * 0.993; 
     setAmountOut(hitungSederhana.toFixed(4));
   };
@@ -40,12 +36,11 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-slate-900 p-6 text-white">
-      {/* Header Tombol Connect Wallet Asli Bawaan SDK */}
+      {/* Tombol Hubungkan Dompet Resmi SDK */}
       <div className="absolute top-6 right-6">
         <ConnectButton />
       </div>
 
-      {/* Kotak Utama DEX / Router Swap */}
       <div className="w-full max-w-md bg-slate-800 p-6 rounded-3xl border border-slate-700 shadow-2xl">
         <h2 className="text-xl font-bold mb-6 text-slate-200">Stellar Soroban Router DEX</h2>
         
@@ -56,7 +51,6 @@ export default function Home() {
             <input 
               type="number" 
               min="0"
-              step="any"
               placeholder="0.0"
               value={amountIn}
               onKeyDown={handleKeyDown}
@@ -67,7 +61,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Tombol Panah Tukar */}
         <div className="flex justify-center -my-1 mb-2">
           <div className="bg-slate-700 p-2 rounded-full border-4 border-slate-800 text-slate-300">
             ⬇️
@@ -89,7 +82,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Tombol Aksi Eksekusi Swap */}
         <button 
           onClick={handleSwap}
           disabled={!isConnected || !amountIn}
@@ -102,14 +94,12 @@ export default function Home() {
           {isConnected ? "Swap Tokens" : "Connect Wallet First"}
         </button>
 
-        {/* Info Alamat Dompet Asli Pengguna Ketika Berhasil Terkoneksi */}
         {isConnected && account && (
           <div className="mt-4 text-center text-xs text-purple-400 bg-purple-950/30 p-2 rounded-xl border border-purple-800/40 truncate">
             Wallet Detected: {account.address}
           </div>
         )}
 
-        {/* Info Kontrak */}
         <div className="mt-6 text-center text-xs text-slate-500 break-all bg-slate-900/50 p-3 rounded-xl border border-slate-700/50">
           <p className="font-semibold text-slate-400 mb-1">DEX Contract ID (Testnet):</p>
           CCSYHWZCZT3FMITZCUR24QZZPGIEPAGEKYK2UA67GF2XGA5KMP434FH5
