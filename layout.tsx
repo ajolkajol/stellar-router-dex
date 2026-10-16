@@ -18,7 +18,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        {/* Memanggil file pemisah khusus Client Component */}
         <WalletProviderComponents>
           {children}
         </WalletProviderComponents>

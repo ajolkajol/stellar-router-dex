@@ -12,11 +12,6 @@ export default function WalletProviderComponents({
       config={{
         network: NetworkType.TESTNET,
         autoConnect: true,
-        theme: {
-          mode: "dark",
-          primaryColor: "#8b5cf6",
-          borderRadius: "16px",
-        },
       }}
     >
       {children}
