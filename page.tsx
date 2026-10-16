@@ -1,72 +1,54 @@
 "use client";
 import { useState } from "react";
-// Koreksi nama fungsi resmi sesuai dengan library NPM terbaru
-import { StellarWalletKit, WalletNetwork, ALLOWED_WALLETS } from "stellar-wallet-kit";
+// Menggunakan Hooks dan Komponen resmi bawaan SDK
+import { useWallet, ConnectButton } from "stellar-wallet-kit";
 
 export default function Home() {
+  const { account, isConnected } = useWallet();
   const [amountIn, setAmountIn] = useState("");
   const [amountOut, setAmountOut] = useState("");
-  const [walletConnected, setWalletConnected] = useState(false);
-  const [userAddress, setUserAddress] = useState("");
 
-  // 1. Fungsi Utama Menghubungkan Dompet Asli
-  const handleConnect = async () => {
-    try {
-      // Menghilangkan huruf 's' agar sesuai: StellarWalletKit
-      const kit = new StellarWalletKit({
-        network: WalletNetwork.TESTNET,
-        allowWallets: [ALLOWED_WALLETS.FREIGHTER],
-      });
-
-      await kit.openModal({
-        onWalletSelected: async (option) => {
-          const publicKey = await kit.getPublicKey();
-          setUserAddress(publicKey);
-          setWalletConnected(true);
-        }
-      });
-    } catch (error) {
-      console.error("Gagal menghubungkan dompet:", error);
-      // Fallback aman jika ekstensi browser tidak mendeteksi
-      setWalletConnected(true);
-      setUserAddress("GAKWGSIWSU2NM7XFR466KBOTEPF23QYMNPA4JTQWNED6M23T6WUDJTOT");
+  // FUNGSI BLOKIR MINUS: Mencegah tombol minus (-), e, dan karakter aneh diketik di keyboard
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (["-", "e", "E", "+"].includes(e.key)) {
+      e.preventDefault();
     }
   };
 
-  // 2. Fungsi Validasi Angka Input Mutlak (Kunci Angka Minus -1)
+  // VALIDASI INPUT MUTLAK: Mengunci agar nilai saldo tidak bisa di bawah nol
   const handleInputChange = (value: string) => {
-    // Jika pengguna mengetik tanda minus atau angka di bawah 0, otomatis dikosongkan
-    if (value.includes("-") || parseFloat(value) < 0) {
+    const parsed = parseFloat(value);
+    
+    // Jika input kosong, hapus semua angka desimal
+    if (!value) {
       setAmountIn("");
       setAmountOut("");
       return;
     }
-    setAmountIn(value);
-    if (value) {
-      const hitungSederhana = parseFloat(value) * 0.993;
-      setAmountOut(hitungSederhana.toFixed(4));
-    } else {
+
+    // Jika ketahuan memasukkan angka minus atau tidak valid, langsung reset ke kosong
+    if (parsed < 0 || isNaN(parsed)) {
+      setAmountIn("");
       setAmountOut("");
+      return;
     }
+
+    setAmountIn(value);
+    // Logika perhitungan simulasi router DEX dari kontrak CCSY Anda
+    const hitungSederhana = parsed * 0.993; 
+    setAmountOut(hitungSederhana.toFixed(4));
   };
 
   const handleSwap = () => {
     if (!amountIn || parseFloat(amountIn) <= 0) return;
-    alert(`Transaksi Swap sebesar ${amountIn} Token sukses dikirim ke Kontrak CCSY!`);
+    alert(`Transaksi Swap sebesar ${amountIn} Token sukses dikirim ke Kontrak DEX Utama CCSY!`);
   };
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-slate-900 p-6 text-white">
-      {/* Header Tombol Connect Wallet */}
-      <div className="absolute top-6 right-6">
-        <button 
-          onClick={handleConnect}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-xl transition duration-200"
-        >
-          {walletConnected 
-            ? `Connected: ${userAddress.substring(0, 4)}...${userAddress.substring(userAddress.length - 4)}` 
-            : "Connect Wallet"}
-        </button>
+      {/* Header Tombol Connect Wallet Asli Bawaan SDK */}
+      <div className="absolute top-6 right-6 SDK-connect-btn">
+        <ConnectButton />
       </div>
 
       {/* Kotak Utama DEX / Router Swap */}
@@ -80,8 +62,10 @@ export default function Home() {
             <input 
               type="number" 
               min="0"
+              step="any"
               placeholder="0.0"
               value={amountIn}
+              onKeyDown={handleKeyDown}
               onChange={(e) => handleInputChange(e.target.value)}
               className="bg-transparent text-2xl font-semibold outline-none w-full text-white"
             />
@@ -103,7 +87,7 @@ export default function Home() {
             <input 
               type="text" 
               placeholder="0.0"
-              value={amountOut}
+              value={amountIn ? amountOut : "0.0"}
               readOnly
               className="bg-transparent text-2xl font-semibold outline-none w-full text-slate-400"
             />
@@ -114,15 +98,22 @@ export default function Home() {
         {/* Tombol Aksi Eksekusi Swap */}
         <button 
           onClick={handleSwap}
-          disabled={!walletConnected || !amountIn || parseFloat(amountIn) <= 0}
+          disabled={!isConnected || !amountIn || parseFloat(amountIn) <= 0}
           className={`w-full py-4 rounded-2xl font-bold text-lg transition duration-200 ${
-            walletConnected && amountIn && parseFloat(amountIn) > 0
+            isConnected && amountIn && parseFloat(amountIn) > 0
               ? "bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer"
               : "bg-slate-700 text-slate-400 cursor-not-allowed"
           }`}
         >
-          {walletConnected ? "Swap Tokens" : "Connect Wallet First"}
+          {isConnected ? "Swap Tokens" : "Connect Wallet First"}
         </button>
+
+        {/* Info Alamat Dompet Asli Pengguna */}
+        {isConnected && account && (
+          <div className="mt-4 text-center text-xs text-green-400 bg-green-950/30 p-2 rounded-xl border border-green-800/40">
+            Wallet Detected: {account.address.substring(0, 6)}...{account.address.substring(account.address.length - 6)}
+          </div>
+        )}
 
         {/* Info Kontrak */}
         <div className="mt-6 text-center text-xs text-slate-500 break-all bg-slate-900/50 p-3 rounded-xl border border-slate-700/50">
