@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-// Menggunakan Hooks dan Komponen resmi bawaan SDK
+// Menggunakan Hooks dan Komponen visual tombol bawaan SDK resmi
 import { useWallet, ConnectButton } from "stellar-wallet-kit";
 
 export default function Home() {
@@ -8,34 +8,28 @@ export default function Home() {
   const [amountIn, setAmountIn] = useState("");
   const [amountOut, setAmountOut] = useState("");
 
-  // FUNGSI BLOKIR MINUS: Mencegah tombol minus (-), e, dan karakter aneh diketik di keyboard
+  // FUNGSI BLOKIR MINUS: Memblokir total tombol minus (-), tanda tambah (+), dan huruf 'e' saat diketik di keyboard
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (["-", "e", "E", "+"].includes(e.key)) {
+    if (["-", "+", "e", "E"].includes(e.key)) {
       e.preventDefault();
     }
   };
 
-  // VALIDASI INPUT MUTLAK: Mengunci agar nilai saldo tidak bisa di bawah nol
+  // VALIDASI INPUT ABSOLUT: Jika pengguna nekat melakukan copy-paste "-11", sistem langsung menghapusnya otomatis dalam 0.01 detik!
   const handleInputChange = (value: string) => {
-    const parsed = parseFloat(value);
+    // Menghapus paksa semua simbol minus atau karakter aneh menggunakan metode regex pembersih teks
+    const cleanValue = value.replace(/[-+eE]/g, "");
     
-    // Jika input kosong, hapus semua angka desimal
-    if (!value) {
+    // Jika kolom kosong, atau angka di bawah atau sama dengan nol, langsung bersihkan input
+    if (!cleanValue || parseFloat(cleanValue) <= 0 || isNaN(parseFloat(cleanValue))) {
       setAmountIn("");
       setAmountOut("");
       return;
     }
-
-    // Jika ketahuan memasukkan angka minus atau tidak valid, langsung reset ke kosong
-    if (parsed < 0 || isNaN(parsed)) {
-      setAmountIn("");
-      setAmountOut("");
-      return;
-    }
-
-    setAmountIn(value);
-    // Logika perhitungan simulasi router DEX dari kontrak CCSY Anda
-    const hitungSederhana = parsed * 0.993; 
+    
+    setAmountIn(cleanValue);
+    // Logika perhitungan matematika Router DEX dari kontrak CCSY Anda
+    const hitungSederhana = parseFloat(cleanValue) * 0.993; 
     setAmountOut(hitungSederhana.toFixed(4));
   };
 
@@ -47,7 +41,7 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-slate-900 p-6 text-white">
       {/* Header Tombol Connect Wallet Asli Bawaan SDK */}
-      <div className="absolute top-6 right-6 SDK-connect-btn">
+      <div className="absolute top-6 right-6">
         <ConnectButton />
       </div>
 
@@ -98,9 +92,9 @@ export default function Home() {
         {/* Tombol Aksi Eksekusi Swap */}
         <button 
           onClick={handleSwap}
-          disabled={!isConnected || !amountIn || parseFloat(amountIn) <= 0}
+          disabled={!isConnected || !amountIn}
           className={`w-full py-4 rounded-2xl font-bold text-lg transition duration-200 ${
-            isConnected && amountIn && parseFloat(amountIn) > 0
+            isConnected && amountIn
               ? "bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer"
               : "bg-slate-700 text-slate-400 cursor-not-allowed"
           }`}
@@ -108,10 +102,10 @@ export default function Home() {
           {isConnected ? "Swap Tokens" : "Connect Wallet First"}
         </button>
 
-        {/* Info Alamat Dompet Asli Pengguna */}
+        {/* Info Alamat Dompet Asli Pengguna Ketika Berhasil Terkoneksi */}
         {isConnected && account && (
-          <div className="mt-4 text-center text-xs text-green-400 bg-green-950/30 p-2 rounded-xl border border-green-800/40">
-            Wallet Detected: {account.address.substring(0, 6)}...{account.address.substring(account.address.length - 6)}
+          <div className="mt-4 text-center text-xs text-purple-400 bg-purple-950/30 p-2 rounded-xl border border-purple-800/40 truncate">
+            Wallet Detected: {account.address}
           </div>
         )}
 
